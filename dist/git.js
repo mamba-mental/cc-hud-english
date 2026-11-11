@@ -2,9 +2,15 @@
 // git calls with an 800 ms budget each. Degrades, never fails: no repo →
 // folder only; status failure → dirty = null (rendered "?"), never "clean".
 import { execFile } from 'node:child_process';
-// Short per-call budget: both git invocations run concurrently and must fit
-// comfortably inside the 2s render deadline even on a cold disk cache.
-const GIT_TIMEOUT_MS = 800;
+// Per-call budget: both git invocations run concurrently and must fit inside
+// the 2s render deadline. 800 ms was too tight on Windows machines where a
+// single git call takes 0.7-1.3 s (Defender scanning git.exe), which silently
+// dropped the branch. 1500 ms still fits the deadline; override with
+// CC_HUD_GIT_TIMEOUT_MS (clamped to 100-1900 ms).
+const GIT_TIMEOUT_MS = (() => {
+    const n = Number(process.env.CC_HUD_GIT_TIMEOUT_MS);
+    return Number.isFinite(n) && n > 0 ? Math.min(1900, Math.max(100, n)) : 1500;
+})();
 function git(cwd, args) {
     return new Promise(resolve => {
         try {
