@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// mmx-debug.mjs — 贴 MiniMax API 响应看 cc-hud 会输出什么
-// 用法:
-//   1. 拿到真实 API 响应:
+// mmx-debug.mjs — paste a MiniMax API response to see what cc-hud would print
+// Usage:
+//   1. Get a real API response:
 //        curl -sH "Authorization: Bearer $TOKEN" https://api.minimaxi.com/v1/token_plan/remains > resp.json
 //   2. ./scripts/mmx-debug.mjs < resp.json
-//      或 ./scripts/mmx-debug.mjs '你的json'
+//      or ./scripts/mmx-debug.mjs '<your json>'
 //
-// 展示 cc-hud 当前的聚合逻辑输出 (Token Plan Plus: sum usage / max total)
+// Shows the output of cc-hud's current aggregation logic (Token Plan Plus: sum usage / max total)
 
 const args = process.argv.slice(2);
 let jsonInput = '';
@@ -22,7 +22,7 @@ if (!jsonInput.trim()) {
 }
 
 if (!jsonInput.trim()) {
-  console.error('用法: mmx-debug.mjs [json | < response.json]');
+  console.error('Usage: mmx-debug.mjs [json | < response.json]');
   process.exit(1);
 }
 
@@ -30,18 +30,18 @@ let data;
 try {
   data = JSON.parse(jsonInput);
 } catch (e) {
-  console.error('JSON 解析失败:', e.message);
+  console.error('JSON parse failed:', e.message);
   process.exit(1);
 }
 
 const remains = data.model_remains ?? [];
 
-console.log('\n┌─ API 响应概览 ─────────────────────────────────┐');
-console.log(`│  model_remains 数量: ${remains.length}`);
+console.log('\n┌─ API response overview ───────────────────────┐');
+console.log(`│  model_remains count: ${remains.length}`);
 console.log('└────────────────────────────────────────────────┘\n');
 
 if (remains.length === 0) {
-  console.log('❌ model_remains 是空数组 — cc-hud 会显示无 rate limit 数据');
+  console.log('❌ model_remains is an empty array — cc-hud will show no rate-limit data');
   process.exit(0);
 }
 
@@ -60,8 +60,8 @@ function aggregatePlan(remains) {
   return Object.values(quota).every(Number.isFinite) ? quota : null;
 }
 
-// 打印每条记录的概要
-console.log('每条记录:');
+// Print a summary of each record
+console.log('Records:');
 remains.forEach((m, i) => {
   const status = m.current_interval_status;
   const active = status === 1 ? '✓ active' : '○ inactive';
@@ -74,20 +74,20 @@ remains.forEach((m, i) => {
 
 const q = aggregatePlan(remains);
 if (!q) {
-  console.log('\n❌ aggregatePlan 返回 null — cc-hud 显示无 rate limit 数据');
+  console.log('\n❌ aggregatePlan returned null — cc-hud shows no rate-limit data');
   process.exit(0);
 }
 
 const fiveHrRemH = ((q.fiveHourResetsAt - Date.now()) / 3600000).toFixed(1);
 const weeklyRemD = ((q.sevenDayResetsAt - Date.now()) / 86400000).toFixed(1);
 
-console.log('\n┌─ cc-hud aggregatePlan 输出 (Token Plan Plus) ──┐');
+console.log('\n┌─ cc-hud aggregatePlan output (Token Plan Plus) ┐');
 console.log(`│  5h: ${q.fiveHourUsedPct}%  (${fiveHrRemH}h until reset)`);
 console.log(`│  7d: ${q.sevenDayUsedPct}%  (${weeklyRemD}d until reset)`);
-console.log('│  算法: pick status=1 entry, used% = 100 - remaining_percent');
+console.log('│  Algorithm: pick status=1 entry, used% = 100 - remaining_percent');
 console.log('│  (general = active plan quota, video/etc = inactive)');
 console.log('└────────────────────────────────────────────────┘\n');
 
-console.log('💡 跟你的 dashboard 对一下:');
-console.log('   - 如果 5h % 跟 dashboard 一致 → 修对了');
-console.log('   - 如果不一致 → 可能是 per-model 配额 (非 Plus plan), 跑历史版本对比');
+console.log('💡 Compare against your dashboard:');
+console.log('   - if the 5h % matches the dashboard → the fix is right');
+console.log('   - if it does not match → probably per-model quotas (not the Plus plan); compare against older versions');

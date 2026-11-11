@@ -129,7 +129,7 @@ describe('glm balance', () => {
 
     it('extracts data.balance from real GLM response shape', async () => {
       // Real GLM response: { code: 200, data: { balance: 0.556 } }
-      nextResponse = new Response(JSON.stringify({ code: 200, msg: '操作成功', data: { balance: 0.556208 } }));
+      nextResponse = new Response(JSON.stringify({ code: 200, msg: 'Operation successful', data: { balance: 0.556208 } }));
       const { getGlmBalance } = await importGlm();
       assert.equal((await getGlmBalance())?.payload, '¥0.56');
     });
@@ -186,7 +186,7 @@ describe('glm balance', () => {
     });
 
     it('returns null on 401 response', async () => {
-      nextResponse = new Response('{"error":{"code":"401","message":"令牌已过期"}}', { status: 401 });
+      nextResponse = new Response('{"error":{"code":"401","message":"Token has expired"}}', { status: 401 });
       const { getGlmBalance } = await importGlm();
       assert.equal(await getGlmBalance(), null);
     });

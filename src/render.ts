@@ -39,7 +39,7 @@ function color(percent: number): string {
   return RED;
 }
 
-// Reasoning effort ("思考深度") — capitalize the raw level for display.
+// Reasoning effort — capitalize the raw level for display.
 const EFFORT_LABELS: Record<string, string> = {
   low: 'Low', medium: 'Medium', high: 'High', xhigh: 'XHigh', max: 'Max',
 };

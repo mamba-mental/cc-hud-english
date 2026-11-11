@@ -39,7 +39,7 @@ interface AgentMeta {
 
 export interface TranscriptInfo {
   agents: AgentEntry[];
-  effort: string | null; // reasoning effort of the latest main-chain turn ("思考深度")
+  effort: string | null; // reasoning effort of the latest main-chain turn
 }
 
 const EMPTY: TranscriptInfo = { agents: [], effort: null };
